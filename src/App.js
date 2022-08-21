@@ -1,24 +1,34 @@
-import logo from './logo.svg';
 import './App.css';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
+import Home from './pages/Home';
+import Auth from './pages/Auth';
+import { useState, useEffect } from 'react';
+import Generate from './pages/Generate';
 
 function App() {
+  
+  const [user, setUser] = useState(1);
+  const [loggedIn, setLoggedIn] = useState(true);
+
+  useEffect(() => {
+    if (!loggedIn) {
+      // check for local storage bearer token and send one auth call to server
+    }
+  }, [])
+  
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home user={user} loggedIn={loggedIn} />} />
+        <Route exact path="/login" element={<Auth user={user} loggedIn={loggedIn} />} />
+        <Route exact path="/generate" element={<Generate user={user} loggedIn={loggedIn} />} />
+      </Routes>
+    </Router>
   );
 }
 
