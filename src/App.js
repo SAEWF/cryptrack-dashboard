@@ -11,8 +11,9 @@ import Generate from './pages/Generate';
 
 function App() {
   
-  const [user, setUser] = useState(1);
-  const [loggedIn, setLoggedIn] = useState(true);
+  // change user to null and loggedIn user to false initially
+  const [user, setUser] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     if (!loggedIn) {
