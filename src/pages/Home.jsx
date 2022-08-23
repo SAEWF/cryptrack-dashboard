@@ -7,68 +7,83 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import Header from './Header';
 import './Home.scss';
+import { baseUrl } from '../shared/baseUrl';
 const ariaLabel = { 'aria-label': 'description' };
 
 const Home = (props) => {
     const navigate = useNavigate();
     
-    const [user, setUser] = useState('');
+    const [sender, setSender] = useState('');
+    const [receiver, setReceiver] = useState('');
     const [msg, setMsg] = useState('');
     const [time, setTime] = useState('');
     const [loading, setLoading] = useState(false);
 
     // once integrate with server, remove this hardcoded data to empty array
-    const [trackedData, setTrackedData] = useState([
-        {
-            user: "raghav@gmail.com",
-            msg: "Hello Raghav how are you?",
-            time: Date.now().toLocaleString()
-        },
-        {
-            user: "mukati@gmail.com",
-            msg: "Hello Raghav how are you?",
-            time: Date.now().toLocaleString()
-        },
-        {
-            user: "gurjar@gmail.com",
-            msg: "Hello Raghav how are you?",
-            time: Date.now().toLocaleString()
-        },
-        {
-            user: "deepak@gmail.com",
-            msg: "Hello Raghav how are you?",
-            time: Date.now().toLocaleString()
-        }
-    ]);
+    const [trackedData, setTrackedData] = useState([]);
     const [expanded, setExpanded] = useState(-1)
 
     useEffect(() => {
-        if (props.userLoggedIn === false || props.user === null) {
+        if (props.loggedIn === false || props.user === null) {
             navigate('/login');
         }
     }, []);
     
-    const handleTrack = (e) => {
+    const handleTrack = async (e) => {
         try {
             e.preventDefault();
             setLoading(true);
             // @shubhank fetch tracking data using user, msg and time payload and
-            // setTrackedData() as an array;
+            const response = await fetch(baseUrl+'users/generateAPIKey', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + props.token
+                },
+                body: JSON.stringify({username: props.user['username']})
+            });
+            const data1 = await response.json();
+            console.log(data1);
+            const key = data1.apiKey;
+            const secret = data1.apiSecret;
+            const resp = await fetch(baseUrl+'track',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': key, 
+                    'apisecret': secret, 
+                    'username': props.user.username
+                },
+                body: JSON.stringify({msg,sender,receiver,time})
+            });
+            const data = await resp.json();
+            console.log(data);
+            setTrackedData(data);
             setLoading(false);
         } catch (err) {
+            setLoading(false);
+            setTrackedData([]);
             console.log(err);
         }
     }
     
     return (
         <>
-            <Header loggedIn={props.loggedIn} user={props.user} />
+            <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn}/>
             <div className="home-container">
                 <div className="head">TRACK</div>
                 <form className="inputs" onSubmit={handleTrack} >
                     <Input
-                        value={user}
-                        onChange={(e) => setUser(e.target.value)}
+                        value={sender}
+                        onChange={(e) => setSender(e.target.value)}
+                        className="input"
+                        placeholder="Enter User email"
+                        inputProps={ariaLabel}
+                        required
+                    />
+                    <Input
+                        value={receiver}
+                        onChange={(e) => setReceiver(e.target.value)}
                         className="input"
                         placeholder="Enter User email"
                         inputProps={ariaLabel}
@@ -114,9 +129,10 @@ const Home = (props) => {
                                         
                                             <div className="msg">
                                                 <div className="user">
-                                                    {data.user}
+                                                    {data.sender}
                                                 </div>
                                                 <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
+                                                    <div className="data">Receiver: {data.receiver}</div>
                                                     <div className="data">Message: {data.msg}</div>
                                                     <div className="data">Time: {data.time}</div>
                                                 </div>

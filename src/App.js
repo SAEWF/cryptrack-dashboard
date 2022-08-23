@@ -11,12 +11,23 @@ import Generate from './pages/Generate';
 
 function App() {
   
-  const [user, setUser] = useState(1);
-  const [loggedIn, setLoggedIn] = useState(true);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (!loggedIn) {
+    if (!loggedIn || !token) {
       // check for local storage bearer token and send one auth call to server
+      const token = localStorage.getItem('token');
+      if (token) {
+        setLoggedIn(true);
+        setToken(token);
+      }
+
+      const user = localStorage.getItem('creds');
+      if (user) {
+        setUser(JSON.parse(user));
+      }
     }
   }, [])
   
@@ -24,9 +35,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home user={user} loggedIn={loggedIn} />} />
-        <Route exact path="/login" element={<Auth user={user} loggedIn={loggedIn} />} />
-        <Route exact path="/generate" element={<Generate user={user} loggedIn={loggedIn} />} />
+        <Route path="/" element={<Home user={user} loggedIn={loggedIn} setUser={setUser} setLoggedIn={setLoggedIn} token={token}/>} />
+        <Route exact path="/login" element={<Auth user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
+        <Route exact path="/generate" element={<Generate user={user} token={token} loggedIn={loggedIn} setUser={setUser} setLoggedIn={setLoggedIn}  />} />
       </Routes>
     </Router>
   );
