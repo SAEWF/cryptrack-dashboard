@@ -77,7 +77,7 @@ const Home = (props) => {
                         value={sender}
                         onChange={(e) => setSender(e.target.value)}
                         className="input"
-                        placeholder="Enter User email"
+                        placeholder="Enter Sender email"
                         inputProps={ariaLabel}
                         required
                     />
@@ -85,7 +85,7 @@ const Home = (props) => {
                         value={receiver}
                         onChange={(e) => setReceiver(e.target.value)}
                         className="input"
-                        placeholder="Enter User email"
+                        placeholder="Enter Receiver email"
                         inputProps={ariaLabel}
                         required
                     />
@@ -133,8 +133,8 @@ const Home = (props) => {
                                                 </div>
                                                 <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
                                                     <div className="data">Receiver: {data.receiver}</div>
-                                                    <div className="data">Message: {data.msg}</div>
-                                                    <div className="data">Time: {data.time}</div>
+                                                    <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{__html: data.msg}}></span></div>
+                                                    <div className="data">Time: {data.time&&new Date(parseInt(data.time)).toString()}</div>
                                                 </div>
                                             </div>
                                         </div>
