@@ -17,13 +17,13 @@ const Auth = (props) => {
     
     return (
         <>
-            <Header loggedIn={props.loggedIn} user={props.user}/>
+            <Header loggedIn={props.loggedIn} setLoggedIn={props.setLoggedIn} user={props.user}/>
             <div className="auth-container">
                 <div className="mode-switch">
                     <span className={mode==='login' ? 'selected login' : 'login'} onClick={() => setMode('login')}> Login</span>
                     <span className={mode === 'signup' ? 'selected signup' : 'signup'} onClick={() => setMode('signup')}> Signup</span>
                 </div>
-                {mode === 'login' ? <Login /> : <Signup />}
+                {mode === 'login' ? <Login setLoggedIn={props.setLoggedIn} setUser={props.setUser} /> : <Signup />}
             </div>
         </>
     )
