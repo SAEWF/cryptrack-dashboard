@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Input from '@mui/material/Input';
 import CircularProgress from '@mui/material/CircularProgress';
 import './Login.scss';
+import { baseUrl } from '../shared/baseUrl';
 
 const ariaLabel = { 'aria-label': 'description' };
 
@@ -9,11 +10,34 @@ const Signup = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstname, setfirstname] = useState("");
+  const [lastname, setlastname] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const signupUser = async (user) => {
+    // console.log("user", user);
+    return await fetch(baseUrl + 'users/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user)
+    })
+    .then(response => response.json())
+    .then(response => {
+      // console.log('response : ', response);
+      if(response.status===200){
+        document.getElementById("message").innerHTML = "User created successfully !! Kindly Login !";
+      }
+      else{
+        document.getElementById("message").innerHTML = "Error creating user";
+      }
+    }
+    )
+    .catch(error => console.log(error.message));
+  }     
+
+  const handleSubmit = async (e) => {
     try {
       e.preventDefault();
       setLoading(true);
@@ -21,6 +45,7 @@ const Signup = () => {
         alert("Password and Confirm Password does not match!");
         return;
       }
+      await signupUser({ username, password, firstname, lastname });
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -42,8 +67,8 @@ const Signup = () => {
               className="input"
               placeholder="Eg - Raghav"
               inputProps={ariaLabel}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={firstname}
+              onChange={(e) => setfirstname(e.target.value)}
               required
             />
           </div>
@@ -55,8 +80,8 @@ const Signup = () => {
               className="input"
               placeholder="Eg - Mukati"
               inputProps={ariaLabel}
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={lastname}
+              onChange={(e) => setlastname(e.target.value)}
               required
             />
           </div>
@@ -106,7 +131,7 @@ const Signup = () => {
           {!loading ? <button type="submit">SIGNUP</button> : <CircularProgress className="progress" />}
         </div>
       </form>
-
+      <div className="message" id="message"></div>
     </div>
   )
 };

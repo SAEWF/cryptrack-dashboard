@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from './Header';
 import './Generate.scss';
+import { baseUrl } from '../shared/baseUrl';
 
 const Generate = (props) => {
     const navigate = useNavigate();
@@ -11,12 +12,35 @@ const Generate = (props) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        if (props.loggedIn === false || props.user === null) {
+            navigate('/login');
+        }
+    }, [props.loggedIn, props.user, navigate]);
+
+    useEffect(() => {
         if (!props.loggedIn || !props.user) {
             navigate('/login')
         }
 
         // @shubhank fetch api keys from server
+        const fetchKeys = async () => {
+            setLoading(true);
+            const response = await fetch(baseUrl+'users/generateAPIKey', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + props.token
+                },
+                body: JSON.stringify({username: props.user['username']})
+            });
+            const data = await response.json();
+            console.log(data);
+            setKey(data.apiKey);
+            setSecret(data.apiSecret);
+            setLoading(false);
+        }
 
+        fetchKeys();
     }, []);
 
     const handleGenerate = () => {
@@ -33,25 +57,35 @@ const Generate = (props) => {
     
     return (
         <>
-            <Header loggedIn={props.loggedIn} user={props.user} />
+            <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn}/>
             <div className="generate-container">
                 {key && secret ?
                     <div className="generated-apis">
                         <span>Your API Keys:</span>
-                        <div className="table">
-                            <div className="row">
-                                <div className="col title">API Key</div>
-                                <div className="col title">API Secret</div>
-                            </div>
-                            <div className="row">
-                                <div className="col">{key}</div>
-                                <div className="col">{secret}</div>
-                            </div>
-                        </div>
+                        <br />
+                        <table>
+                            <tr>
+                                <th>API Key</th>
+                                <th>API Secret</th>
+                            </tr>
+                            <tr>
+                                <td>{key}</td>
+                                <td>{secret}</td>
+                            </tr>
+                        </table>
                     </div>
                     :
                     <div className="generate-button">
-                        {!loading ? <button onClick={handleGenerate}>GENERATE API KEY</button> : <CircularProgress />}
+                        {
+                            !key && !loading ?
+                                <button className="button" onClick={handleGenerate}>Generate API Keys</button>
+                                : loading && !key ?
+                                <CircularProgress />
+                                : key ?
+                                <div>API Keys generated: {key}</div>
+                                : null
+
+                        }
                     </div>
                 }
                     
