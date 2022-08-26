@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'; 
+import ClearIcon from '@mui/icons-material/Clear';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import Header from './Header';
 import './Home.scss';
 import { baseUrl } from '../shared/baseUrl';
 const ariaLabel = { 'aria-label': 'description' };
-const metadataKeys = { fileUrl: 'fileUrl', file_id: 'fileId', file_name: 'fileName', latitude: 'latitude', longitude: 'longitude', msg: 'Enter Message', receiver: "Enter Receiver Email", sender: "Enter Sender Email", time: "Enter time in milliseconds" };
-
+// const metadataKeys = { fileUrl: 'fileUrl', file_id: 'fileId', file_name: 'fileName', latitude: 'latitude', longitude: 'longitude', msg: 'Enter Message', receiver: "Enter Receiver Email", sender: "Enter Sender Email", time: "Enter time in milliseconds" };
+const defaultValues = { key: '', value: '' };
 const Home = (props) => {
     const navigate = useNavigate();
     
@@ -24,7 +25,8 @@ const Home = (props) => {
     // once integrate with server, remove this hardcoded data to empty array
     const [trackedData, setTrackedData] = useState([]);
     const [expanded, setExpanded] = useState(-1)
-    const [formData, setFormData] = useState({ fileUrl: '', file_id: '', file_name: '', latitude: '', longitude: '', msg: '', receiver: "", sender: "", time: "" });
+    const [count, setCount] = useState(3);
+    const [formData, setFormData] = useState([defaultValues, defaultValues, defaultValues]);
 
     useEffect(() => {
         if (props.loggedIn === false || props.user === null) {
@@ -35,9 +37,16 @@ const Home = (props) => {
     const handleTrack = async (e) => {
         try {
             e.preventDefault();
+            console.log(formData);
+            let newData = {};
+            for (let k in formData) {
+                if (formData[k].key)
+                    newData[formData[k].key] = formData[k].value;
+            }
+            console.log(newData);
             setLoading(true);
-            let jsonBody = formData;
-            jsonBody = { ...jsonBody, attachmentData: { fileUrl: formData.fileUrl, file_id: formData.file_id, file_name: formData.file_name } };
+            let jsonBody = newData;
+            jsonBody = { ...jsonBody, attachmentData: { fileUrl: newData.fileUrl, file_id: newData.file_id, file_name: newData.file_name } };
             delete jsonBody.fileUrl;
             delete jsonBody.file_id;
             delete jsonBody.file_name;
@@ -80,17 +89,43 @@ const Home = (props) => {
         }
     }
     
-    const handleChange = (key, value) => {
-        setFormData(prev => { return { ...prev, [key]: value } })
+    const handleChange = (key, value, type) => {
+        let temp = formData[key];
+        setFormData(prev => { return { ...prev, [key]: { ...temp, [type]: value } } });
     };
+
+    const addNewCount = () => {
+        setCount(prev => prev + 1);
+        setFormData(d => {
+            let temp = d;
+            temp[count] = defaultValues;
+            console.log(temp);
+            return temp;
+        })
+        // temp.push(defaultValues);
+        // setFormData(temp);
+    }
 
     const getInputs = () => {
         let inputs = [];
-        for (let k in metadataKeys) {
-            inputs.push(<li>{k}: <input value={formData[k]} key={k} onChange={(e) => handleChange(k, e.target.value)} placeholder={metadataKeys[k]} /></li>)
+        inputs.push(
+            <li className="row solid">
+                <div className="col">KEY</div>
+                <div className="col">VALUE</div>
+                {/* <ClearIcon /> */}
+            </li>
+        );
+        for (let k = 0; k < count; k++) {
+            inputs.push(<li className="row">
+                <input className="col" value={formData[k].key} key={k + 'key'} onChange={(e) => handleChange(k, e.target.value, 'key')} placeholder='KEY' />
+                <input className="col" value={formData[k].value} key={k + 'value'} onChange={(e) => handleChange(k, e.target.value, 'value')} placeholder='VALUE' />
+                {/* <ClearIcon /> */}
+            </li>)
         }
-        return <ul>
+        return <ul className="input-form">
             {inputs.map(i => i)}
+            {<button className="row" onClick={addNewCount}>ADD NEW</button>}
+            <button className="row" type="submit">{!loading ? 'TRACK' : 'Tracking....'}</button>
         </ul>;
     }
     const getType = (input) => {
@@ -109,96 +144,68 @@ const Home = (props) => {
         <>
             <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn} />
             <div className="home-container">
-                <div className="head">TRACK</div>
-                <form className="inputs" onSubmit={handleTrack} >
-                    {/* <Input
-                        value={sender}
-                        onChange={(e) => setSender(e.target.value)}
-                        className="input"
-                        placeholder="Enter Sender email"
-                        inputProps={ariaLabel}
-                        required
-                    />
-                    <Input
-                        value={receiver}
-                        onChange={(e) => setReceiver(e.target.value)}
-                        className="input"
-                        placeholder="Enter Receiver email"
-                        inputProps={ariaLabel}
-                        required
-                    />
-                    <Input
-                        value={msg}
-                        onChange={(e) => setMsg(e.target.value)}
-                        className="input"
-                        placeholder="Enter Message to Track"
-                        inputProps={ariaLabel}
-                        required
-                    />
-                    <Input
-                        value={time}
-                        onChange={(e) => setTime(e.target.value)}
-                        className="input"
-                        placeholder="Enter Time (in seconds)"
-                        inputProps={ariaLabel}
-                        required
-                    /> */}
-                    {getInputs()}
-                    <button type="submit">{!loading ? 'TRACK' : 'Tracking....'}</button>
-                </form>
-                <div className="track-container">
-                    {loading ?
-                        <div className="track-progress">
-                            <CircularProgress className="progress" />
-                        </div>
-                        :
-                        <div className="track-data">
-                            {trackedData.map((data, idx) => {
-                                return (
-                                    <>
-                                        <div className="row" key={data.time + data.user}>
-                                            {expanded !== idx ?
-                                                <span className='icon' onClick={() => { setExpanded(idx) }} >
-                                                    <AddIcon />
-                                                </span>
-                                                :
-                                                <span className='icon' onClick={() => { setExpanded(-1) }}>
-                                                    <RemoveIcon />
-                                                </span>}
+                <div className="home-left">
+                    <form className="inputs" onSubmit={handleTrack} >
+                        {getInputs()}
+                    </form>
+                    
+                </div>
+                <div className="home-right">
+                    {/* Right */}
+                    <div className="track-container">
+                        {loading ?
+                            <div className="track-progress">
+                                <CircularProgress className="progress" />
+                            </div>
+                            :
+                            <div className="track-data">
+                                {trackedData.map((data, idx) => {
+                                    return (
+                                        <>
+                                            <div className="row" key={data.time + data.user}>
+                                                {expanded !== idx ?
+                                                    <span className='icon' onClick={() => { setExpanded(idx) }} >
+                                                        <AddIcon />
+                                                    </span>
+                                                    :
+                                                    <span className='icon' onClick={() => { setExpanded(-1) }}>
+                                                        <RemoveIcon />
+                                                    </span>}
                                         
-                                            <div className="msg">
-                                                <div className="user">
-                                                    {data.sender}
-                                                </div>
-                                                <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
-                                                    {console.log(data.fileUrl)}
-                                                    <div className="data">Receiver: {data.receiver}</div>
-                                                    <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{ __html: data.msg }}></span></div>
-                                                    <div className="data">Time: {data.time && new Date(parseInt(data.time)).toString()}</div>
-                                                    <div className="data">fileUrl: <a href={data?.attachmentData?.fileUrl}>{data?.attachmentData?.fileUrl}</a></div>
-                                                    {
-                                                        type === 'img' ?
-                                                            <img style={{ height: '100px', width: '100px' }} className="data" src={data?.attachmentData?.fileUrl} />
-                                                            :
-                                                            type === 'video' ?
-                                                                (<video width="320" height="240" controls>
-                                                                    <source src={data?.attachmentData?.fileUrl} type="video/mp4" />
-                                                                </video>)
+                                                <div className="msg">
+                                                    <div className="user">
+                                                        {data.sender}
+                                                    </div>
+                                                    <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
+                                                        {console.log(data.fileUrl)}
+                                                        <div className="data">Receiver: {data.receiver}</div>
+                                                        <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{ __html: data.msg }}></span></div>
+                                                        <div className="data">Time: {data.time && new Date(parseInt(data.time)).toString()}</div>
+                                                        <div className="data">fileUrl: <a href={data?.attachmentData?.fileUrl}>{data?.attachmentData?.fileUrl}</a></div>
+                                                        {
+                                                            type === 'img' ?
+                                                                <img style={{ height: '100px', width: '100px' }} className="data" src={data?.attachmentData?.fileUrl} />
                                                                 :
-                                                                <a href={data?.attachmentData?.fileUrl} target="_blank" >{ data?.attachmentData?.file_name}</a>
-                                                    }
-                                                    {/* <img style={{height: '100px', width: '100px'}} className="data" src={data?.attachmentData?.fileUrl} /> */}
+                                                                type === 'video' ?
+                                                                    (<video width="320" height="240" controls>
+                                                                        <source src={data?.attachmentData?.fileUrl} type="video/mp4" />
+                                                                    </video>)
+                                                                    :
+                                                                    <a href={data?.attachmentData?.fileUrl} target="_blank" >{data?.attachmentData?.file_name}</a>
+                                                        }
+                                                        {/* <img style={{height: '100px', width: '100px'}} className="data" src={data?.attachmentData?.fileUrl} /> */}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className={`down ${idx === trackedData.length - 1 ? 'hide' : ''}`}>
-                                            <KeyboardDoubleArrowDownIcon />
-                                        </div>
-                                    </>
-                                )
-                            })}
-                        </div>
-                    }
+                                            <div className={`down ${idx === trackedData.length - 1 ? 'hide' : ''}`}>
+                                                <KeyboardDoubleArrowDownIcon />
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </>

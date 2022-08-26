@@ -14,14 +14,16 @@ const Header = (props) => {
     return (
         <div className="navbar">
             <div className="logo" onClick={() => navigate('/')}>Admin Dashboard</div>
-            {!props.loggedIn||!props.user ?
-                <div className="login-button" onClick={() => navigate('/login')}>Login / Signup</div>
-                :
-                <>
-                    <div className="logout-button" onClick={handleLogout}>Logout</div>
-                    <div className="login-button" onClick={() => navigate('/generate')}> Generate API Key </div>
-                </>
-            }
+            <div className="links">
+                {!props.loggedIn || !props.user ?
+                    <div className="login-button" onClick={() => navigate('/login')}>Login / Signup</div>
+                    :
+                    <>
+                        <div className="login-button" onClick={handleLogout}>Logout</div>
+                        <div className="login-button" onClick={() => navigate('/generate')}> Generate API Key </div>
+                    </>
+                }
+            </div>
         </div>
     )
 };
