@@ -11,9 +11,7 @@ import { baseUrl } from '../shared/baseUrl';
 import GoogleMapReact from 'google-map-react';
 const ariaLabel = { 'aria-label': 'description' };
 const metadataKeys = { fileUrl: 'fileUrl', file_id: 'fileId', file_name: 'fileName', latitude: 'latitude', longitude: 'longitude', msg: 'Enter Message', receiver: "Enter Receiver Email", sender: "Enter Sender Email", time: "Enter time in milliseconds" };
-
 const AnyReactComponent = ({ text }) => <div>{text}</div>;
-
 const Home = (props) => {
     const navigate = useNavigate();
     
@@ -68,29 +66,15 @@ const Home = (props) => {
                     'apisecret': 'QrwygxP8_32GTSjuXayl_TrAJOuYiGvBYLzb',
                     'username': 'saewf@nitw.com'
                 },
-                body: JSON.stringify({username: props.user['username']})
-            });
-            const data1 = await response.json();
-            console.log(data1);
-            const key = data1.apiKey;
-            const secret = data1.apiSecret;
-            console.log('tracking for : ', {msg,sender,receiver,time,latitude, longitude})
-            const resp = await fetch(baseUrl+'track',{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': key, 
-                    'apisecret': secret, 
-                    'username': props.user.username
-                },
-                body: JSON.stringify(jsonBody)
+                body: JSON.stringify(jsonBody),
             });
             const data = await resp.json();
-            console.log(data);
-            if(JSON.stringify(data) !== '{}')
-              setTrackedData(data);
-            else setTrackedData([])
-              setType(getType(data[0]?.attachmentData?.fileUrl));
+            if (JSON.stringify(data) == '{}')
+                setTrackedData([]);
+            else
+                setTrackedData(data);
+            // console.log(data);
+            setType(getType(data[0]?.attachmentData?.fileUrl));
             setLoading(false);
         } catch (err) {
             setLoading(false);
@@ -123,7 +107,8 @@ const Home = (props) => {
             return 'video';
         return 'file';
     };
-    return (
+
+return (
         <>
             <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn} />
             <div className="home-container">
