@@ -155,10 +155,11 @@ const Home = (props) => {
                                                     {data.sender}
                                                 </div>
                                                 <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
+                                                    {console.log(data.fileUrl)}
                                                     <div className="data">Receiver: {data.receiver}</div>
                                                     <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{__html: data.msg}}></span></div>
                                                     <div className="data">Time: {data.time&&new Date(parseInt(data.time)).toString()}</div>
-                                                    <img style={{height: '100px', width: '100px'}} className="data" src={data.fileUrl} />
+                                                    <img style={{height: '100px', width: '100px'}} className="data" src={data?.attachmentData?.fileUrl} />
                                                 </div>
                                             </div>
                                         </div>
