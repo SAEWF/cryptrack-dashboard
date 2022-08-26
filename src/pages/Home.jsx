@@ -66,8 +66,11 @@ const Home = (props) => {
                 body: JSON.stringify(jsonBody),
             });
             const data = await resp.json();
-            console.log(data);
-            setTrackedData(data);
+            if (JSON.stringify(data) == '{}')
+                setTrackedData([]);
+            else
+                setTrackedData(data);
+            // console.log(data);
             setType(getType(data[0]?.attachmentData?.fileUrl));
             setLoading(false);
         } catch (err) {
