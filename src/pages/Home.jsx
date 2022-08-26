@@ -8,7 +8,10 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import Header from './Header';
 import './Home.scss';
 import { baseUrl } from '../shared/baseUrl';
+import GoogleMapReact from 'google-map-react';
 const ariaLabel = { 'aria-label': 'description' };
+
+const AnyReactComponent = ({ text }) => <div>{text}</div>;
 
 const Home = (props) => {
     const navigate = useNavigate();
@@ -18,9 +21,16 @@ const Home = (props) => {
     const [msg, setMsg] = useState('');
     const [time, setTime] = useState('');
     const [loading, setLoading] = useState(false);
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('')
 
     // once integrate with server, remove this hardcoded data to empty array
-    const [trackedData, setTrackedData] = useState([]);
+    const [trackedData, setTrackedData] = useState([{
+        msg: 'hi',
+        sender: '1234',
+        receiver: '3122',
+        time: '1234'
+    }]);
     const [expanded, setExpanded] = useState(-1)
 
     useEffect(() => {
@@ -46,6 +56,7 @@ const Home = (props) => {
             console.log(data1);
             const key = data1.apiKey;
             const secret = data1.apiSecret;
+            console.log('tracking for : ', {msg,sender,receiver,time,latitude, longitude})
             const resp = await fetch(baseUrl+'track',{
                 method: 'POST',
                 headers: {
@@ -54,11 +65,13 @@ const Home = (props) => {
                     'apisecret': secret, 
                     'username': props.user.username
                 },
-                body: JSON.stringify({msg,sender,receiver,time})
+                body: JSON.stringify({msg,sender,receiver,time,latitude, longitude})
             });
             const data = await resp.json();
             console.log(data);
+            if(JSON.stringify(data) !== '{}')
             setTrackedData(data);
+            else setTrackedData([])
             setLoading(false);
         } catch (err) {
             setLoading(false);
@@ -66,7 +79,7 @@ const Home = (props) => {
             console.log(err);
         }
     }
-    
+
     return (
         <>
             <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn}/>
@@ -98,6 +111,22 @@ const Home = (props) => {
                         required
                     />
                     <Input
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                        className="input"
+                        placeholder="Enter Latitude"
+                        inputProps={ariaLabel}
+                        required
+                    />
+                    <Input
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                        className="input"
+                        placeholder="Enter Longitude"
+                        inputProps={ariaLabel}
+                        required
+                    />
+                    <Input
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
                         className="input"
@@ -114,7 +143,9 @@ const Home = (props) => {
                         </div>
                         :
                         <div className="track-data">
+                            
                             {trackedData.map((data, idx) => {
+                                console.log(data);
                                 return (
                                     <>
                                         <div className="row" key={data.time + data.user}>
@@ -135,6 +166,19 @@ const Home = (props) => {
                                                     <div className="data">Receiver: {data.receiver}</div>
                                                     <div className="data">Message: {data.msg}</div>
                                                     <div className="data">Time: {data.time}</div>
+                                                    <div style={{ height: '40vh', width: '40%' }}>
+                                                    <GoogleMapReact
+                                                        bootstrapURLKeys={{ key: "AIzaSyCbW_osHSoG74xi7iTxwbZI3Wdrra51iZ8" }}
+                                                        defaultCenter={{lat: 31.2444468,lng: 75.7022454}}
+                                                        defaultZoom={11}
+                                                    >
+                                                        <AnyReactComponent
+                                                            lat={59.955413}
+                                                            lng={30.337844}
+                                                            text="My Marker"
+                                                        />
+                                                    </GoogleMapReact>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
