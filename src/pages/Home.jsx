@@ -27,12 +27,7 @@ const Home = (props) => {
     const [type, setType] = useState('');
 
     // once integrate with server, remove this hardcoded data to empty array
-    const [trackedData, setTrackedData] = useState([{
-        msg: 'hi',
-        sender: '1234',
-        receiver: '3122',
-        time: '1234'
-    }]);
+    const [trackedData, setTrackedData] = useState([]);
     const [expanded, setExpanded] = useState(-1)
     const [formData, setFormData] = useState({ fileUrl: '', file_id: '', file_name: '', latitude: '', longitude: '', msg: '', receiver: "", sender: "", time: "" });
 
@@ -65,7 +60,7 @@ const Home = (props) => {
             // const key = data1.apiKey;
             // const secret = data1.apiSecret;
             console.log(jsonBody);
-            const resp = await fetch(baseUrl + 'track', {
+            const response = await fetch(baseUrl + 'track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
