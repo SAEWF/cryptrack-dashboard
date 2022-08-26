@@ -91,6 +91,7 @@ const Home = (props) => {
         </ul>;
     }
     const getType = (input) => {
+        if (!input) return;
         let ext = input.split('.')
         let img_extensions = ['jpeg', 'jpg', 'png', 'gif', 'tiff'];
         let vid_extensions = ['mp4', 'mkv'];
