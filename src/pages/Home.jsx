@@ -19,6 +19,7 @@ const Home = (props) => {
     const [msg, setMsg] = useState('');
     const [time, setTime] = useState('');
     const [loading, setLoading] = useState(false);
+    const [type, setType] = useState('');
 
     // once integrate with server, remove this hardcoded data to empty array
     const [trackedData, setTrackedData] = useState([]);
@@ -54,12 +55,12 @@ const Home = (props) => {
             // const key = data1.apiKey;
             // const secret = data1.apiSecret;
             console.log(jsonBody);
-            const resp = await fetch(baseUrl+'track',{
+            const resp = await fetch(baseUrl + 'track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': 'L.W6w9.XpGOYb1iKGfhmW3q0', 
-                    'apisecret': 'QrwygxP8_32GTSjuXayl_TrAJOuYiGvBYLzb', 
+                    'apikey': 'L.W6w9.XpGOYb1iKGfhmW3q0',
+                    'apisecret': 'QrwygxP8_32GTSjuXayl_TrAJOuYiGvBYLzb',
                     'username': 'saewf@nitw.com'
                 },
                 body: JSON.stringify(jsonBody),
@@ -67,6 +68,7 @@ const Home = (props) => {
             const data = await resp.json();
             console.log(data);
             setTrackedData(data);
+            setType(getType(data[0]?.attachmentData?.fileUrl));
             setLoading(false);
         } catch (err) {
             setLoading(false);
@@ -88,10 +90,20 @@ const Home = (props) => {
             {inputs.map(i => i)}
         </ul>;
     }
+    const getType = (input) => {
+        let ext = input.split('.')
+        let img_extensions = ['jpeg', 'jpg', 'png', 'gif', 'tiff'];
+        let vid_extensions = ['mp4', 'mkv'];
+        if (img_extensions.includes(ext[ext.length - 1]))
+            return 'img';
+        else if (vid_extensions.includes(ext[ext.length - 1]))
+            return 'video';
+        return 'file';
+    };
 
     return (
         <>
-            <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn}/>
+            <Header loggedIn={props.loggedIn} user={props.user} setUser={props.setUser} setLoggedIn={props.setLoggedIn} />
             <div className="home-container">
                 <div className="head">TRACK</div>
                 <form className="inputs" onSubmit={handleTrack} >
@@ -157,10 +169,21 @@ const Home = (props) => {
                                                 <div className={`content ${expanded !== idx ? 'hide' : ''}`}>
                                                     {console.log(data.fileUrl)}
                                                     <div className="data">Receiver: {data.receiver}</div>
-                                                    <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{__html: data.msg}}></span></div>
+                                                    <div className="data"><div className="key">Message: </div><span className="data" dangerouslySetInnerHTML={{ __html: data.msg }}></span></div>
                                                     <div className="data">Time: {data.time && new Date(parseInt(data.time)).toString()}</div>
-                                                    <div className="data">fileUrl: {data?.attachmentData?.fileUrl}</div>
-                                                    <img style={{height: '100px', width: '100px'}} className="data" src={data?.attachmentData?.fileUrl} />
+                                                    <div className="data">fileUrl: <a href={data?.attachmentData?.fileUrl}>{data?.attachmentData?.fileUrl}</a></div>
+                                                    {
+                                                        type === 'img' ?
+                                                            <img style={{ height: '100px', width: '100px' }} className="data" src={data?.attachmentData?.fileUrl} />
+                                                            :
+                                                            type === 'video' ?
+                                                                (<video width="320" height="240" controls>
+                                                                    <source src={data?.attachmentData?.fileUrl} type="video/mp4" />
+                                                                </video>)
+                                                                :
+                                                                <a href={data?.attachmentData?.fileUrl} target="_blank" >{ data?.attachmentData?.file_name}</a>
+                                                    }
+                                                    {/* <img style={{height: '100px', width: '100px'}} className="data" src={data?.attachmentData?.fileUrl} /> */}
                                                 </div>
                                             </div>
                                         </div>
