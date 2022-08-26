@@ -11,6 +11,7 @@ import Generate from './pages/Generate';
 
 function App() {
   
+  // change user to null and loggedIn user to false initially
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
